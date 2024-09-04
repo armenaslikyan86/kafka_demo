@@ -3,43 +3,31 @@ package com.example.demo.controller;
 import com.example.demo.service.KafkaConsumer;
 import com.example.demo.service.KafkaProducer;
 import org.springframework.web.bind.annotation.*;
-
-
-
+import org.springframework.http.ResponseEntity;
 import org.springframework.beans.factory.annotation.Autowired;
-
 import java.util.List;
 
 @RestController
+@RequestMapping("/kafka")
 public class KafkaController {
-    @Autowired
-    private KafkaConsumer consumer;
+
+    private final KafkaConsumer consumer;
+    private final KafkaProducer producer;
 
     @Autowired
-    private KafkaProducer producer;
+    public KafkaController(KafkaConsumer consumer, KafkaProducer producer) {
+        this.consumer = consumer;
+        this.producer = producer;
+    }
 
     @PostMapping("/send")
-    public void send(@RequestBody String data) {
+    public ResponseEntity<Void> send(@RequestBody String data) {
         producer.produce(data);
+        return ResponseEntity.ok().build();
     }
+
     @GetMapping("/receive")
-    public List<String> receive() {
-        return consumer.messages;
-    }
-
-    public KafkaConsumer getConsumer() {
-        return consumer;
-    }
-
-    public KafkaProducer getProducer() {
-        return producer;
-    }
-
-    public void setConsumer(KafkaConsumer consumer) {
-        this.consumer = consumer;
-    }
-
-    public void setProducer(KafkaProducer producer) {
-        this.producer = producer;
+    public ResponseEntity<List<String>> receive() {
+        return ResponseEntity.ok(consumer.getMessages());
     }
 }
