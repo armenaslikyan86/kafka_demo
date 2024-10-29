@@ -11,7 +11,7 @@ public class KafkaConsumer {
 
     private final List<String> messages = new ArrayList<>();
 
-    @KafkaListener(topics = "${kafka.topic.name}", groupId = "${kafka.consumer.group-id}")
+    @KafkaListener(topics = "${app.topic}", groupId = "${spring.kafka.groupId}")
     public void listen(String message) {
         messages.add(message);
     }
