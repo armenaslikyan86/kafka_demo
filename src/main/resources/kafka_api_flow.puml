@@ -1,0 +1,68 @@
+@startuml
+allow_mixing
+' Client
+actor Client
+
+' Components
+component KafkaController
+component KafkaProducer
+component KafkaConsumer
+component BeanMapper
+component NewlineEscapeConverter
+
+
+' Domain Models
+
+class SourceData {
+  - sourceField : String
+  + getSourceField() : String
+  + setSourceField(sourceField : String) : void
+}
+
+class DestinationData {
+  - destinationField : String
+  + getDestinationField() : String
+  + setDestinationField(destinationField : String) : void
+}
+
+' Database (Kafka)
+database Kafka
+
+' Relationships
+Client --> KafkaController : "POST /kafka/send"
+Client --> KafkaController : "GET /kafka/messages"
+KafkaController --> KafkaProducer : "produce(data)"
+KafkaController --> KafkaConsumer : "getMessages()"
+KafkaProducer --> Kafka : "send(topic, message)"
+Kafka --> KafkaConsumer : "@KafkaListener"
+KafkaConsumer --> BeanMapper : "process received messages"
+BeanMapper --> SourceData : "reads"
+BeanMapper --> DestinationData : "produces"
+BeanMapper --> NewlineEscapeConverter : "uses"
+
+' Notes
+note right of Kafka
+  Topic: app.topic
+  Bootstrap servers: localhost:9092
+end note
+
+note right of KafkaConsumer
+  @KafkaListener(topic)
+  Group ID: group_test
+  Stores messages in ArrayList
+end note
+
+note right of BeanMapper
+  Maps SourceData.sourceField
+  to DestinationData.destinationField
+end note
+
+note right of KafkaProducer
+  Sends serialized messages
+end note
+
+note right of NewlineEscapeConverter
+  Escapes/unescapes newlines and tabs (\n, \t)
+end note
+
+@enduml
